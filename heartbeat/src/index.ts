@@ -16,11 +16,10 @@ async function run() {
     core.info(`Pinging QuietPulse endpoint: ${url}`);
     core.info(`Grace period: ${gracePeriodMinutes} minutes, timeout: ${timeoutSeconds}s`);
 
-    // Make request
-    const response = await axios.post(url, {}, {
+    // Make request (GET as per QuietPulse API)
+    const response = await axios.get(url, {
       timeout: timeoutSeconds * 1000,
       headers: {
-        'Content-Type': 'application/json',
         'User-Agent': 'QuietPulse-GitHub-Action/1.0',
       },
     });

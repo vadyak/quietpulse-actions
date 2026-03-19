@@ -1,100 +1,115 @@
 # QuietPulse Heartbeat GitHub Action
 
-[![GitHub Actions](https://github.com/vadyak/quietpulse-actions/actions/workflows/test.yml/badge.svg)](https://github.com/vadyak/quietpulse-actions/actions)
-
-Send heartbeat pings to [QuietPulse](https://quietpulse.xyz) to monitor your GitHub Actions cron jobs and scheduled tasks. Get instant Telegram/Email alerts when a scheduled workflow fails or is missed.
+Send heartbeat pings to [QuietPulse](https://quietpulse.xyz) to monitor your scheduled tasks and cron jobs. Get instant Telegram/Email alerts when a scheduled task fails or is missed.
 
 ## Usage
 
-Add this step at the **end** of your scheduled job:
+Add this step to any scheduled job in your workflow:
 
 ```yaml
-- name: Send heartbeat to QuietPulse
-  uses: vadyak/quietpulse-actions/heartbeat@v1
-  with:
-    endpoint_token: ${{ secrets.QUIETPULSE_TOKEN }}
-    grace_period_minutes: 5
-    timeout_seconds: 10
+name: Nightly Backup
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # Every day at 2 AM
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Backup database
+        run: |
+          # Your backup commands here
+          pg_dump ...
+
+      - name: Send heartbeat to QuietPulse
+        uses: vadyak/quietpulse-actions/heartbeat@v1
+        with:
+          endpoint_token: ${{ secrets.QUIETPULSE_ENDPOINT_TOKEN }}
 ```
 
 ## Setup
 
-### 1. Create a job in QuietPulse
+### 1. Create a QuietPulse account
+- Go to [quietpulse.xyz](https://quietpulse.xyz) and sign up
+- Create a new job (heartbeat endpoint)
+- Copy the **Ping URL** (it ends with a unique token)
 
-- Sign up at [quietpulse.xyz](https://quietpulse.xyz)
-- Create a new job → copy the **Ping URL**: `https://quietpulse.xyz/ping/abc123...`
-- The token is the last segment (`abc123...`)
-- Store it as a GitHub secret `QUIETPULSE_TOKEN`
+### 2. Add token to GitHub Secrets
+In your repository settings:
+- Go to **Settings → Secrets and variables → Actions**
+- Create a new secret named `QUIETPULSE_ENDPOINT_TOKEN`
+- Paste the token part of the URL (the last segment after `/ping/`)
 
-### 2. Add the heartbeat step
+Example Ping URL:
+```
+https://quietpulse.xyz/ping/abc123def456...
+```
+Secret value: `abc123def456...`
 
-Use `if: success()` to only ping on successful job completion.
+### 3. Configure alert notifications
+In QuietPulse dashboard, enable **Telegram** notifications for this job to receive alerts when the heartbeat is missed.
 
 ## Inputs
 
 | Input | Required | Default | Description |
 |-------|----------|---------|-------------|
-| `endpoint_token` | ✅ | — | QuietPulse endpoint token |
-| `grace_period_minutes` | ❌ | `5` | Grace period before marking as missed |
-| `timeout_seconds` | ❌ | `10` | HTTP request timeout |
+| `endpoint_token` | ✅ Yes | — | QuietPulse endpoint token (from job settings) |
+| `grace_period_minutes` | ❌ No | `5` | Grace period in minutes (optional) |
+| `timeout_seconds` | ❌ No | `10` | HTTP request timeout in seconds (optional) |
 
 ## Outputs
 
 | Output | Description |
 |--------|-------------|
-| `status` | `success`, `failed`, or `error` |
-| `http_status` | HTTP response code |
-| `message` | Result message |
+| `status` | Result status: `success`, `failed`, or `error` |
+| `http_status` | HTTP response status code |
+| `message` | Success message or error details |
 
 ## Examples
 
-### Node.js Deployment
+### Basic usage
 ```yaml
-name: Deploy
-on:
-  schedule:
-    - cron: '0 2 * * *'
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: npm ci && npm run build
-      - run: npm run deploy
-      - name: Heartbeat
-        if: success()
-        uses: vadyak/quietpulse-actions/heartbeat@v1
-        with:
-          endpoint_token: ${{ secrets.QUIETPULSE_DEPLOY_TOKEN }}
+- uses: vadyak/quietpulse-actions/heartbeat@v1
+  with:
+    endpoint_token: ${{ secrets.QUIETPULSE_TOKEN }}
 ```
 
-### Python Script
+### With custom grace period
 ```yaml
-- name: Run data pipeline
-  run: python pipeline.py
-- name: Notify QuietPulse
-  if: success()
+- uses: vadyak/quietpulse-actions/heartbeat@v1
+  with:
+    endpoint_token: ${{ secrets.QUIETPULSE_TOKEN }}
+    grace_period_minutes: 10
+```
+
+### With timeout and step outputs
+```yaml
+- name: Heartbeat
+  id: heartbeat
   uses: vadyak/quietpulse-actions/heartbeat@v1
   with:
-    endpoint_token: ${{ secrets.QUIETPULSE_PIPELINE_TOKEN }}
+    endpoint_token: ${{ secrets.QUIETPULSE_TOKEN }}
+
+- name: Check result
+  run: |
+    if ${{ steps.heartbeat.outputs.status != 'success' }}; then
+      echo "Heartbeat failed!"
+      exit 1
+    fi
 ```
-
-## Best Practices
-
-- **Only ping on success** (`if: success()`) — missing ping indicates failure
-- **Match interval** to cron schedule in QuietPulse job settings
-- **Use separate tokens** for different workflows
-- **Set appropriate grace period** (20-30% of interval for short jobs)
 
 ## Troubleshooting
 
-| Issue | Fix |
-|-------|-----|
-| `404 Not Found` | Check token, create job in QuietPulse |
-| `403 Forbidden` | Token invalid, regenerate |
-| `429 Too Many Requests` | Rate limit, upgrade plan |
-| Workflow not triggering | Validate cron syntax |
+| Issue | Solution |
+|-------|----------|
+| `Endpoint not found` | Check that the token is correct and the job exists in QuietPulse |
+| `403 Forbidden` | Token expired or invalid — generate a new one |
+| `429 Too Many Requests` | You've exceeded the rate limit (upgrade plan) |
+| Action times out | Increase `timeout_seconds` input (default 10s) |
 
 ## License
 

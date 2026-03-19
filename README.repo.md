@@ -26,7 +26,7 @@ jobs:
           pg_dump ...
 
       - name: Send heartbeat to QuietPulse
-        uses: vadyak/quietpulse-actions/heartbeat@v1
+        uses: vadyak/quietpulse-actions@v1
         with:
           endpoint_token: ${{ secrets.QUIETPULSE_ENDPOINT_TOKEN }}
 ```
@@ -73,14 +73,14 @@ In QuietPulse dashboard, enable **Telegram** or **Email** notifications for this
 
 ### Basic usage
 ```yaml
-- uses: vadyak/quietpulse-actions/heartbeat@v1
+- uses: vadyak/quietpulse-actions@v1
   with:
     endpoint_token: ${{ secrets.QUIETPULSE_TOKEN }}
 ```
 
 ### With custom grace period
 ```yaml
-- uses: vadyak/quietpulse-actions/heartbeat@v1
+- uses: vadyak/quietpulse-actions@v1
   with:
     endpoint_token: ${{ secrets.QUIETPULSE_TOKEN }}
     grace_period_minutes: 10
@@ -90,7 +90,7 @@ In QuietPulse dashboard, enable **Telegram** or **Email** notifications for this
 ```yaml
 - name: Heartbeat
   id: heartbeat
-  uses: vadyak/quietpulse-actions/heartbeat@v1
+  uses: vadyak/quietpulse-actions@v1
   with:
     endpoint_token: ${{ secrets.QUIETPULSE_TOKEN }}
 

@@ -1,6 +1,10 @@
 # QuietPulse GitHub Actions
 
+[![GitHub Actions](https://github.com/vadyak/quietpulse-actions/actions/workflows/test.yml/badge.svg)](https://github.com/vadyak/quietpulse-actions/actions)
+
 Reusable GitHub Actions for monitoring cron jobs and scheduled tasks with [QuietPulse](https://quietpulse.xyz).
+
+> **Stable version:** `@v1` (recommended for production)
 
 ## Actions
 

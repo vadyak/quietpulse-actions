@@ -46,7 +46,7 @@ In your repository settings:
 
 Example Ping URL:
 ```
-https://quietpulse.xyz/api/ping/abc123def456...
+https://quietpulse.xyz/ping/abc123def456...
 ```
 Secret value: `abc123def456...`
 

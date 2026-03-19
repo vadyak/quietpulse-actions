@@ -11,7 +11,7 @@ async function run() {
 
     // Build URL
     const baseUrl = process.env.QUIETPULSE_API_URL || 'https://quietpulse.xyz';
-    const url = `${baseUrl}/api/ping/${endpointToken}`;
+    const url = `${baseUrl}/ping/${endpointToken}`;
 
     core.info(`Pinging QuietPulse endpoint: ${url}`);
     core.info(`Grace period: ${gracePeriodMinutes} minutes, timeout: ${timeoutSeconds}s`);

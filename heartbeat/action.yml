@@ -1,0 +1,24 @@
+name: 'QuietPulse Heartbeat'
+description: 'Send heartbeat ping to QuietPulse to monitor cron jobs and scheduled tasks'
+author: 'Vadim <vadyakr@gmail.com>'
+
+inputs:
+  endpoint_token:
+    description: 'QuietPulse endpoint token (from job settings)'
+    required: true
+  grace_period_minutes:
+    description: 'Grace period in minutes (optional, default: 5)'
+    required: false
+    default: '5'
+  timeout_seconds:
+    description: 'HTTP request timeout in seconds (optional, default: 10)'
+    required: false
+    default: '10'
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
+
+branding:
+  icon: 'activity'
+  color: 'blue'
